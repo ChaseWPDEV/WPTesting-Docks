@@ -2,6 +2,8 @@
 FROM wordpress:php7.4-apache
 RUN apt-get update
 RUN apt-get -y install subversion
+RUN apt-get -y install git
+RUN pecl install xdebug
 
 RUN apt-get -y install mariadb-server
 COPY install-wp-tests.sh /install-wp-tests.sh
@@ -11,15 +13,15 @@ WORKDIR "/root"
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
 	chmod +x wp-cli.phar && \
 	mv wp-cli.phar /usr/local/bin/wp
-RUN wp core download --force --allow-root && chown -R www-data:www-data /var/www/html
-RUN ls && service mariadb start && wp core config --dbname=wp_tests --dbuser=root --dbpass=root --dbhost=127.0.0.1 --dbprefix=wp_ --allow-root
+RUN wp core download --force --allow-root
+RUN service mariadb start && \
+	wp core config --dbname=wp_tests --dbuser=root --dbpass=root --dbhost=127.0.0.1 --dbprefix=wp_ --allow-root &&\
+	wp core install --url=http://localhost:8080 --title=Test --admin_user=admin --admin_email=root@email.com --allow-root
 
 WORKDIR "/tmp"
-RUN apt-get -y install git
 RUN git clone https://github.com/Yoast/PHPUnit-Polyfills.git
 RUN curl -LO https://phar.phpunit.de/phpunit-7.5.20.phar && mv phpunit-7.5.20.phar /usr/local/bin/phpunit 
 RUN chmod +x /usr/local/bin/phpunit
-RUN pecl install xdebug
 RUN echo "zend_extension = xdebug.so" >> /usr/local/etc/php/php.ini-development && \
 	echo "xdebug.mode=coverage" >> /usr/local/etc/php/php.ini-development && \
 	cp /usr/local/etc/php/php.ini-development  /usr/local/etc/php/php.ini

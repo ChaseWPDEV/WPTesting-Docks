@@ -2,7 +2,18 @@
 FROM wordpress:php7.4-apache
 RUN apt-get update
 RUN apt-get -y install subversion
+
 RUN apt-get -y install mariadb-server
+COPY install-wp-tests.sh /install-wp-tests.sh
+RUN service mariadb start && mysqladmin -u root password 'root' && /install-wp-tests.sh
+
+WORKDIR "/root"
+RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
+	chmod +x wp-cli.phar && \
+	mv wp-cli.phar /usr/local/bin/wp
+RUN wp core download --force --allow-root && chown -R www-data:www-data /var/www/html
+RUN ls && service mariadb start && wp core config --dbname=wp_tests --dbuser=root --dbpass=root --dbhost=127.0.0.1 --dbprefix=wp_ --allow-root
+
 WORKDIR "/tmp"
 RUN apt-get -y install git
 RUN git clone https://github.com/Yoast/PHPUnit-Polyfills.git
@@ -13,12 +24,10 @@ RUN echo "zend_extension = xdebug.so" >> /usr/local/etc/php/php.ini-development 
 	echo "xdebug.mode=coverage" >> /usr/local/etc/php/php.ini-development && \
 	cp /usr/local/etc/php/php.ini-development  /usr/local/etc/php/php.ini
 
-COPY install-wp-tests.sh /install-wp-tests.sh
-RUN service mariadb start && mysqladmin -u root password 'root' && /install-wp-tests.sh
 
 RUN echo "define('WP_TESTS_PHPUNIT_POLYFILLS_PATH', '/tmp/PHPUnit-Polyfills/');" >> wordpress-tests-lib/wp-tests-config.php
-RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
-	chmod +x wp-cli.phar && \
-	mv wp-cli.phar /usr/local/bin/wp
-WORKDIR "/var/www/html/wp-content/"
+
+RUN echo 'alias wp="wp --allow-root"' >> /root/.bashrc
+
+WORKDIR "/root/wp-content"
 ENTRYPOINT service mariadb start && bash

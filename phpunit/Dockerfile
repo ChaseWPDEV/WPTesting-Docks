@@ -22,9 +22,10 @@ RUN php composer-setup.php
 RUN php -r "unlink('composer-setup.php');"
 RUN mv composer.phar /usr/local/bin/composer
 RUN composer require --dev yoast/phpunit-polyfills
+RUN composer require --dev 10up/wp_mock:0.4.2
 
 RUN echo "require_once('/tmp/vendor/autoload.php');" >> /tmp/wordpress-tests-lib/wp-tests-config.php
-
+#ATTENTION: Add your composer packages here!!
 WORKDIR "/root"
 #wp-cli for pleasant user experience
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \

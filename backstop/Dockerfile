@@ -1,8 +1,11 @@
 #wpbackstoptests
-FROM node:12-stretch
+FROM node:12-bullseye
 USER root
 RUN npm install -g npm
 RUN npm install -g backstopjs
-RUN mkdir /var/backstop-tests
-WORKDIR /var/backstop-tests
+
+WORKDIR /home/node
+
+
+USER node
 ENTRYPOINT bash

@@ -41,4 +41,4 @@ RUN echo "xdebug.mode=coverage" >> /usr/local/etc/php/php.ini-development && \
 	cp /usr/local/etc/php/php.ini-development  /usr/local/etc/php/php.ini
 
 WORKDIR "/root/wp-content"
-ENTRYPOINT service mariadb start && bash
+ENTRYPOINT service mariadb start

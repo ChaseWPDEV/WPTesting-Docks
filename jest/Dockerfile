@@ -1,5 +1,5 @@
 #wpjestests
-FROM node:12-alpine
+FROM node:12.20-alpine
 RUN apk update
 RUN apk add --no-cache bash
 RUN npm install -g jest jest-cli
